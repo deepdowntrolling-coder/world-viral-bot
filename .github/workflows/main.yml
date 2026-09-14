@@ -1,4 +1,4 @@
-name: World Viral V9 SALES 100 Categories
+name: World Viral V10 HYBRID News + Product
 on:
   schedule:
     - cron: '0 8 * * *'
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       pillar:
-        description: 'Category ID (or auto for random 100)'
+        description: 'Pillar (or auto)'
         required: false
         default: 'auto'
 
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-      - name: Install system deps
+      - name: Install deps
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg imagemagick fonts-dejavu-core
@@ -29,12 +29,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install lxml
-      - name: Run SALES bot V9
+      - name: Run V10 hybrid
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           AMAZON_TAG: ${{ secrets.AMAZON_TAG }}
-          AWIN_ID: ${{ secrets.AWIN_ID }}
           PILLAR: ${{ github.event.inputs.pillar || 'auto' }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -44,10 +43,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: sales-video-${{ github.run_number }}-${{ github.run_attempt }}
+          name: hybrid-video-${{ github.run_number }}
           path: |
             world_viral_output.mp4
             script.txt
             text_overlay.png
             pexels_clip.mp4
+            product_image.jpg
           retention-days: 5
+
