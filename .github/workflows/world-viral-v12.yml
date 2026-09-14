@@ -1,0 +1,68 @@
+name: World Viral V12 - 80% News 20% Ad
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 11:00 Suomen aikaa
+    - cron: '0 14 * * *'  # 17:00 Suomen aikaa
+    - cron: '0 20 * * *'  # 23:00 Suomen aikaa
+  workflow_dispatch:
+    inputs:
+      pillar:
+        description: 'Pillar (auto = random, or gold_silver, crypto, etc)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - gold_silver
+          - crypto
+          - usa_iran
+          - russia_ukraine
+          - saudi_iraq_oil
+          - natural_disasters
+          - aviation_accidents
+          - ufo_orbs
+          - eu_euro
+          - uk
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install system deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg imagemagick fonts-dejavu-core
+      - name: Install python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install lxml
+      - name: Run V12 80/20 bot
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          AMAZON_TAG: ${{ secrets.AMAZON_TAG }}
+          AWIN_ID: ${{ secrets.AWIN_ID }}
+          PILLAR: ${{ github.event.inputs.pillar || 'auto' }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python main.py
+      - name: Save artifact (video + product image)
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: v12-video-${{ github.run_number }}
+          path: |
+            world_viral_output.mp4
+            script.txt
+            text_overlay.png
+            pexels_clip.mp4
+            product_image.jpg
+          retention-days: 5
+
