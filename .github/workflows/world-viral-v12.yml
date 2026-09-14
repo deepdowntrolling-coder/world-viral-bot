@@ -1,13 +1,13 @@
-name: World Viral V12 - 80% News 20% Ad
+name: World Viral V14 FIXED 80/20 News + Product Image
 on:
   schedule:
-    - cron: '0 8 * * *'   # 11:00 Suomen aikaa
-    - cron: '0 14 * * *'  # 17:00 Suomen aikaa
-    - cron: '0 20 * * *'  # 23:00 Suomen aikaa
+    - cron: '0 8 * * *'
+    - cron: '0 14 * * *'
+    - cron: '0 20 * * *'
   workflow_dispatch:
     inputs:
       pillar:
-        description: 'Pillar (auto = random, or gold_silver, crypto, etc)'
+        description: 'Pillar (auto = random)'
         required: false
         default: 'auto'
         type: choice
@@ -42,22 +42,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install lxml
-      - name: Run V12 80/20 bot
+      - name: Run V14 FIXED bot (always shows news + product image)
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           AMAZON_TAG: ${{ secrets.AMAZON_TAG }}
+          SPREADSHOP_URL: ${{ secrets.SPREADSHOP_URL }}
           AWIN_ID: ${{ secrets.AWIN_ID }}
           PILLAR: ${{ github.event.inputs.pillar || 'auto' }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
         run: python main.py
-      - name: Save artifact (video + product image)
+      - name: Save artifact
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: v12-video-${{ github.run_number }}
+          name: v14-fixed-video-${{ github.run_number }}
           path: |
             world_viral_output.mp4
             script.txt
