@@ -1,10 +1,15 @@
-name: World Viral V8 REAL NEWS
+name: World Viral V9 SALES 100 Categories
 on:
   schedule:
     - cron: '0 8 * * *'
     - cron: '0 14 * * *'
     - cron: '0 20 * * *'
   workflow_dispatch:
+    inputs:
+      pillar:
+        description: 'Category ID (or auto for random 100)'
+        required: false
+        default: 'auto'
 
 jobs:
   run-bot:
@@ -24,11 +29,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install lxml
-      - name: Run bot REAL NEWS
+      - name: Run SALES bot V9
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          PILLAR: auto
+          AMAZON_TAG: ${{ secrets.AMAZON_TAG }}
+          AWIN_ID: ${{ secrets.AWIN_ID }}
+          PILLAR: ${{ github.event.inputs.pillar || 'auto' }}
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
@@ -37,10 +44,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: video-${{ github.run_number }}
+          name: sales-video-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             world_viral_output.mp4
             script.txt
             text_overlay.png
             pexels_clip.mp4
-          retention-days: 3
+          retention-days: 5
