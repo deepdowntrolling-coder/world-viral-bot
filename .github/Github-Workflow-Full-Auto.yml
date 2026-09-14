@@ -1,0 +1,65 @@
+name: World Viral Daily Bot - FULL AUTO
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 08:00 Helsinki Earth
+    - cron: '0 15 * * *'  # 18:00 Helsinki Tech/Money
+  workflow_dispatch:
+    inputs:
+      pillar:
+        description: 'Which pillar to run'
+        required: false
+        default: 'earth'
+        type: choice
+        options:
+          - earth
+          - tech
+          - money
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          
+      - name: Run Bot and Auto-Upload to YouTube
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          PILLAR: ${{ github.event.inputs.pillar || 'earth' }}
+        run: |
+          # Determine pillar based on time if not manual
+          if [ "${{ github.event.schedule }}" = "0 15 * * *" ]; then
+            # Even day = tech, odd day = money
+            DAY=$(date +%d)
+            if [ $((DAY % 2)) -eq 0 ]; then
+              export PILLAR=tech
+            else
+              export PILLAR=money
+            fi
+          fi
+          echo "Running pillar: $PILLAR"
+          python main.py
+          
+      - name: Upload artifact (backup)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-viral-${{ env.PILLAR }}-${{ github.run_number }}
+          path: |
+            world_viral_output.mp4
+            script.txt
+            voice.mp3
